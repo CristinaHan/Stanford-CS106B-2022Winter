@@ -20,14 +20,14 @@ using namespace std;
  * includes only the letter characters from the original
  * (all non-letter characters are excluded)
  *
- * WARNING: The provided code is buggy!
- *
- * Add student test cases to identify which inputs to this function
- * are incorrectly handled. Then, remove this comment and
- * replace it with a description of the bug you fixed.
+ * Confirm that letterOnly will return the right result
+ * when the first character of string is not a letter
  */
 string lettersOnly(string s) {
-    string result = charToString(s[0]);
+    string result = "";
+    if (isalpha(s[0])) {
+        result = charToString(s[0]);
+    }
     for (int i = 1; i < s.length(); i++) {
         if (isalpha(s[i])) {
             result += s[i];
@@ -36,13 +36,74 @@ string lettersOnly(string s) {
     return result;
 }
 
+string changeToNum(string s) {
+    string allLetters = toUpperCase(s);
+    string result = "";
+    for (int i = 0; i < allLetters.length(); i++) {
+        if (stringContains("AEIOUHWY", allLetters[i])) {
+            result += "0";
+        } else if (stringContains("BFPV", allLetters[i])) {
+            result += "1";
+        } else if (stringContains("CGJKQSXZ", allLetters[i])) {
+            result += "2";
+        } else if (stringContains("DT", allLetters[i])) {
+            result += "3";
+        } else if (stringContains("L", allLetters[i])) {
+            result += "4";
+        } else if (stringContains("MN", allLetters[i])) {
+            result += "5";
+        } else {result += "6";}
+    }
+    return result;
+}
 
+string mergeAdjacent(string s) {
+    string result = charToString(s[0]);
+    for (int i = 0; i < s.length() - 1; i++) {
+        if (s[i+1] != s[i]) {
+            result += s[i+1];
+        }
+    }
+    return result;
+}
+
+string replaceFirst(string s) {
+    string letterS = lettersOnly(s);
+    string numS = changeToNum(letterS);
+    string result = mergeAdjacent(numS);
+    char first = toUpperCase(letterS[0]);
+    result = charToString(first) + result.substr(1);
+    return result;
+}
+
+string deleteZero(string s) {
+    string result = "";
+    for (int i = 0; i < s.length(); i++) {
+        if (s[i] != '0') {
+            result += s[i];
+        }
+    }
+    return result;
+}
+
+string sCode(string s) {
+    string result = s;
+    if (s.length() >= 4) {
+        return s.substr(0, 4);
+    }
+    for (int i = 1; i <= 4 - s.length(); i++) {
+        result += "0";
+    }
+    return result;
+}
 /* TODO: Replace this comment with a descriptive function
  * header comment.
  */
 string soundex(string s) {
     /* TODO: Fill in this function. */
-    return "";
+    s = replaceFirst(s);
+    s = deleteZero(s);
+    return sCode(s);
 }
 
 
@@ -62,16 +123,95 @@ void soundexSearch(string filepath) {
          << allNames.size() << " names found." << endl;
 
     // The names read from file are now stored in Vector allNames
-
     /* TODO: Fill in the remainder of this function. */
+    string surname;
+    Vector<string> result;
+    while (true) {
+        surname = getLine("Enter a surname (RETURN to quit): ");
+        if (surname == "") {
+            return;
+        }
+        string soundexCode = soundex(surname);
+        cout << "Soundex code is " << soundexCode << endl;
+        for (string name: allNames) {
+            if (soundex(name) == soundexCode) {
+                result.add(name);
+            }
+        }
+        result.sort();
+        cout << "Matches from database: " << result << endl;
+        result.clear();
+    }
 }
 
 
 /* * * * * * Test Cases * * * * * */
 
 // TODO: add your STUDENT_TEST test cases here!
+STUDENT_TEST("Confirm lettersOnly is bug-free") {
+    string s = "9248SergioRamos";
+    string result = lettersOnly(s);
+    EXPECT_EQUAL(result, "SergioRamos");
+    s = " Kaka";
+    result = lettersOnly(s);
+    EXPECT_EQUAL(result, "Kaka");
+    s = "   ";
+    result = "";
+    EXPECT_EQUAL(result, "");
+}
 
+STUDENT_TEST("Test changeToNum") {
+    string s = "SERGIORAMOS";
+    string result = changeToNum(s);
+    EXPECT_EQUAL(result, "20620060502");
+    s = "KAKA";
+    result = changeToNum(s);
+    EXPECT_EQUAL(result, "2020");
+}
 
+STUDENT_TEST("Test mergeAdjacent") {
+    string s = "SERGIORAMOS";
+    string sNum = changeToNum(s);
+    string result = mergeAdjacent(sNum);
+    EXPECT_EQUAL(result, "2062060502");
+    s = "KAKKA";
+    sNum = changeToNum(s);
+    result = mergeAdjacent(sNum);
+    EXPECT_EQUAL(result, "2020");
+}
+
+STUDENT_TEST("Test replaceFirst") {
+    string s = "9248SergioRamos";
+    string result = replaceFirst(s);
+    EXPECT_EQUAL(result, "S062060502");
+    s = " Kakka";
+    result = replaceFirst(s);
+    EXPECT_EQUAL(result, "K020");
+}
+
+STUDENT_TEST("Test deleteZero") {
+    string s = "9248SergioRamos";
+    string sNum = replaceFirst(s);
+    string result = deleteZero(sNum);
+    EXPECT_EQUAL(result, "S62652");
+    s = " Kakka";
+    sNum = replaceFirst(s);
+    result = deleteZero(sNum);
+    EXPECT_EQUAL(result, "K2");
+}
+
+STUDENT_TEST("Test sCode") {
+    string s = "9248SergioRamos";
+    string sNum = replaceFirst(s);
+    string sSingle = deleteZero(sNum);
+    string result = sCode(sSingle);
+    EXPECT_EQUAL(result, "S626");
+    s = " Kakka";
+    sNum = replaceFirst(s);
+    sSingle = deleteZero(sNum);
+    result = sCode(sSingle);
+    EXPECT_EQUAL(result, "K200");
+}
 /* Please not add/modify/remove the PROVIDED_TEST entries below.
  * Place your student tests cases above the provided tests.
  */
