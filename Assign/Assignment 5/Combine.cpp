@@ -2,28 +2,50 @@
 #include "Combine.h"
 using namespace std;
 
+Vector<DataPoint> mergeSort(const Vector<DataPoint>& sequence1,
+                            const Vector<DataPoint>& sequence2) {
+    Vector<DataPoint> result;
+    int index1 = 0, index2 = 0;
+    while (index1 < sequence1.size() && index2 < sequence2.size()) {
+        if (sequence1[index1].weight >= sequence2[index2].weight) {
+            result.add(sequence2[index2]);
+            index2++;
+        }
+        else {
+            result.add(sequence1[index1]);
+            index1++;
+        }
+    }
+    if (index1 < sequence1.size()) {
+        result += sequence1.subList(index1);
+    }
+    else {
+        result += sequence2.subList(index2);
+    }
+    return result;
+}
+
 Vector<DataPoint> combine(const Vector<Vector<DataPoint>>& sequences) {
     /* TODO: Delete the next few lines and implement this. */
-    (void) sequences;
-    return {};
+    if (sequences.size() == 0) {
+        return {};
+    }
+    if (sequences.size() == 1) {
+        return sequences[0];
+    }
+    if (sequences.size() == 2) {
+        return mergeSort(sequences[0], sequences[1]);
+    }
+    int half = sequences.size() / 2;
+    auto firstHalf = combine(sequences.subList(0, half));
+    auto lastHalf = combine(sequences.subList(half));
+    return mergeSort(firstHalf, lastHalf);
 }
 
 
 /* * * * * * Test Cases Below This Point * * * * * */
 
 /* TODO: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* * * * * Provided Tests Below This Point * * * * */
