@@ -1,11 +1,34 @@
 #include "Apportionment.h"
+#include "HeapPQueue.h"
 using namespace std;
+
+double weightOfState(double population, double seats) {
+    return population / sqrt(seats * (seats + 1));
+}
 
 Map<string, int> apportion(const Map<string, int>& populations, int numSeats) {
     /* TODO: Delete this line and the lines below it, then implement this function. */
-    (void) populations;
-    (void) numSeats;
-    return {};
+    if (populations.size() > numSeats) {
+        error("There are at least as many seats as there are states!");
+    }
+    Map<string, int> stateAndSeats = populations;
+    HeapPQueue stateQueue;
+
+    numSeats -= populations.size();
+    for (string state: stateAndSeats) {
+        stateAndSeats[state] = 1;
+        double newWeight = populations[state] / sqrt(2);
+        stateQueue.enqueue({state, -newWeight});
+    }
+
+    while (numSeats > 0) {
+        DataPoint current = stateQueue.dequeue();
+        stateAndSeats[current.name]++;
+        current.weight = -weightOfState(populations[current.name], stateAndSeats[current.name]);
+        stateQueue.enqueue(current);
+        numSeats--;
+    }
+    return stateAndSeats;
 }
 
 

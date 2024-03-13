@@ -2,36 +2,84 @@
 using namespace std;
 
 HeapPQueue::HeapPQueue() {
-    /* TODO: Implement this. */
+    logicalSize = 0;
+    allocatedSize = INITIAL_SIZE;
+    elems = new DataPoint[allocatedSize];
 }
 
 HeapPQueue::~HeapPQueue() {
-    /* TODO: Implement this. */
+    delete[] elems;
 }
 
 int HeapPQueue::size() const {
     /* TODO: Delete the next line and implement this. */
-    return 0;
+    return logicalSize;
 }
 
 bool HeapPQueue::isEmpty() const {
     /* TODO: Delete the next line and implement this. */
-    return 0;
+    return size() == 0;
 }
 
 void HeapPQueue::enqueue(const DataPoint& data) {
     /* TODO: Delete the next line and implement this. */
-    (void) data;
+    /* index=0不用动，所以要分配的内存实际是logicalSize+1 */
+    if (allocatedSize == logicalSize + 1) {
+        allocatedSize *= 2;
+        DataPoint* helper = new DataPoint[allocatedSize];
+        for (int i = 1; i <= logicalSize; i++) {
+            helper[i] = elems[i];
+        }
+        delete[] elems;
+        elems = helper;
+    }
+    logicalSize++;
+    elems[logicalSize] = data;
+
+    int parentNode = logicalSize / 2;
+    int newIndex = logicalSize;
+    while (newIndex > 1 && elems[newIndex].weight < elems[parentNode].weight) {
+        swap(elems[newIndex], elems[parentNode]);
+        newIndex = parentNode;
+        parentNode /= 2;
+    }
 }
 
 DataPoint HeapPQueue::peek() const {
     /* TODO: Delete the next line and implement this. */
-    return {};
+    if (isEmpty()) {
+        error("The priority queue is empty!");
+    }
+    else {
+        return elems[1];
+    }
 }
 
 DataPoint HeapPQueue::dequeue() {
     /* TODO: Delete the next line and implement this. */
-    return {};
+    if (isEmpty()) {
+        error("The priority queue is empty!");
+    }
+    else {
+        swap(elems[1], elems[logicalSize]);
+        logicalSize--;
+        int currentIndex = 1;
+
+        while (currentIndex <= logicalSize / 2) {
+            int minChild = currentIndex * 2, rightChild = minChild + 1;
+            if (rightChild <= logicalSize &&
+                elems[rightChild].weight < elems[minChild].weight) {
+                minChild = rightChild;
+            }
+            if (elems[currentIndex].weight > elems[minChild].weight) {
+                swap(elems[currentIndex], elems[minChild]);
+                currentIndex = minChild;
+            }
+            else break;
+        }
+
+        return elems[logicalSize + 1];
+    }
 }
 
 /* This function is purely for you to use during testing. You can have it do whatever
@@ -52,18 +100,6 @@ void HeapPQueue::printDebugInfo() {
 /* * * * * * Test Cases Below This Point * * * * * */
 
 /* TODO: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* * * * * Provided Tests Below This Point * * * * */
