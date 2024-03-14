@@ -5,6 +5,7 @@
 #include "GUI/SimpleTest.h"
 #include "GUI/MemoryDiagnostics.h"
 #include <string>
+#include <algorithm>
 
 class RobinHoodHashTable {
 public:
@@ -95,6 +96,10 @@ private:
      *
      * TODO: Delete this comment before submitting.
      */
+    HashFunction<std::string> myHashFn;
+    int allocatedSize;
+    int logicalSize = 0;
+
 
 
 

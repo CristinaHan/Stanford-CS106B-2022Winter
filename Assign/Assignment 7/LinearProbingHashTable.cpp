@@ -3,38 +3,99 @@ using namespace std;
 
 LinearProbingHashTable::LinearProbingHashTable(HashFunction<string> hashFn) {
     /* TODO: Delete this comment and the next line, then implement this function. */
-    (void) hashFn;
+    myHashFn = hashFn;
+    allocatedSize = hashFn.numSlots();
+    logicalSize = 0;
+    elems = new Slot[allocatedSize];
+
+    for (int i = 0; i < allocatedSize; i++) {
+        elems[i].type = SlotType::EMPTY;
+    }
 }
 
 LinearProbingHashTable::~LinearProbingHashTable() {
     /* TODO: Delete this comment, then implement this function. */
+    delete[] elems;
 }
 
 int LinearProbingHashTable::size() const {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    return -1;
+    return logicalSize;
 }
 
 bool LinearProbingHashTable::isEmpty() const {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    return false;
+    return size() == 0;
 }
 
 bool LinearProbingHashTable::insert(const string& elem) {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
+    if (allocatedSize == size()) {
+        return false;
+    }
+    int hashCode = myHashFn(elem);
+    int i = hashCode, cycle = 0;
+    while (cycle < allocatedSize) {
+        if (elems[i].type == SlotType::EMPTY) {
+            elems[i].value = elem;
+            elems[i].type = SlotType::FILLED;
+            logicalSize++;
+            return true;
+        }
+        if (elems[i].type == SlotType::TOMBSTONE) {
+            if (!contains(elem)) {
+                elems[i].value = elem;
+                elems[i].type = SlotType::FILLED;
+                logicalSize++;
+                return true;
+            }
+        }
+        if (elems[i].type == SlotType::FILLED && elems[i].value == elem) {
+            return false;
+        }
+        i = (i + 1) % allocatedSize;
+        cycle++;
+    }
     return false;
 }
 
 bool LinearProbingHashTable::contains(const string& elem) const {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
+    if (isEmpty()) {
+        return false;
+    }
+    int hashCode = myHashFn(elem);
+    int i = hashCode, cycle = 0;
+    while (cycle < allocatedSize) {
+        if (elems[i].type == SlotType::EMPTY) {
+            return false;
+        }
+        if (elems[i].value == elem && elems[i].type == SlotType::FILLED) {
+            return true;
+        }
+        i = (i + 1) % allocatedSize;
+        cycle++;
+    }
     return false;
 }
 
 bool LinearProbingHashTable::remove(const string& elem) {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
+    int hashCode = myHashFn(elem);
+    int i = hashCode, cycle = 0;
+    while (cycle < allocatedSize) {
+        if ((elems[i].type == SlotType::EMPTY) ||
+            (elems[i].type == SlotType::TOMBSTONE && elems[i].value == elem)) {
+            return false;
+        }
+        if (elems[i].value == elem && elems[i].type == SlotType::FILLED) {
+            elems[i].type = SlotType::TOMBSTONE;
+            logicalSize--;
+            return true;
+        }
+        i = (i + 1) % allocatedSize;
+        cycle++;
+    }
     return false;
 }
 
@@ -47,19 +108,6 @@ void LinearProbingHashTable::printDebugInfo() const {
 #include "GUI/SimpleTest.h"
 
 /* Optional: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* * * * * Provided Tests Below This Point * * * * */
 #include "vector.h"
@@ -781,7 +829,6 @@ PROVIDED_TEST("Stress Test: Inserts/searches/deletes work in expected time O(1) 
 #include "filelib.h"
 #include "Demos/Timer.h"
 PROVIDED_TEST("Stress test: Core functions do not cause stack overflows (should take at most 15 seconds)") {
-    SHOW_ERROR("Stress test is disabled by default. To run it, comment out line " + to_string(__LINE__) + " of " + getTail(__FILE__) + ".");
     const int kTableSize = 1000000;
 
     /* Create a table with 1,000,000 slots, then fill in the first 999,999 of them. */
@@ -818,7 +865,6 @@ PROVIDED_TEST("Stress test: Core functions do not cause stack overflows (should 
 
 #include <fstream>
 PROVIDED_TEST("Stress Test: Handles large workflows with little free space (should take at most fifteen seconds)") {
-    SHOW_ERROR("Stress test is disabled by default. To run it, comment out line " + to_string(__LINE__) + " of " + getTail(__FILE__) + ".");
 
     Vector<string> english;
     ifstream input("res/EnglishWords.txt");

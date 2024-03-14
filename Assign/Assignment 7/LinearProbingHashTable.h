@@ -99,6 +99,19 @@ private:
      */
 
 
+    /* My Hash Function */
+    HashFunction<std::string> myHashFn;
+
+    /* The size of the linear probing hash table, which equals to the number
+     * of filled slots in the linear probing hash table.
+     */
+    int logicalSize;
+
+    /* The number of all slots in the linear probing hash table */
+    int allocatedSize;
+
+
+
 
 
     /* Internal shenanigans to make this play well with C++. */

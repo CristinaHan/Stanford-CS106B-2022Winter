@@ -3,39 +3,99 @@ using namespace std;
 
 RobinHoodHashTable::RobinHoodHashTable(HashFunction<string> hashFn) {
     /* TODO: Delete this comment, then implement this function. */
-    (void) hashFn;
+    myHashFn = hashFn;
+    allocatedSize = hashFn.numSlots();
+    elems = new Slot[allocatedSize];
+    for (int i = 0; i < allocatedSize; i++) {
+        elems[i].distance = EMPTY_SLOT;
+    }
 }
 
 RobinHoodHashTable::~RobinHoodHashTable() {
     /* TODO: Delete this comment, then implement this function. */
+    delete[] elems;
 }
 
 int RobinHoodHashTable::size() const {
     /* TODO: Delete this comment and the next line, then implement this function. */
-    return -1;
+    return logicalSize;
 }
 
 bool RobinHoodHashTable::isEmpty() const {
     /* TODO: Delete this comment and the next line, then implement this function. */
-    return false;
+    return size() == 0;
 }
 
 bool RobinHoodHashTable::insert(const string& elem) {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
+    if (size() == allocatedSize || contains(elem)) {
+        return false;
+    }
+    int hashCode = myHashFn(elem);
+    int i = hashCode, nowDistance = 0;
+    while (true) {
+        if (elems[i].distance == EMPTY_SLOT) {
+            elems[i].value = elem;
+            elems[i].distance = nowDistance;
+            logicalSize++;
+            return true;
+        }
+        if (nowDistance > elems[i].distance) {
+            string replaceValue = elems[i].value;
+            elems[i].distance = nowDistance;
+            elems[i].value = elem;
+            insert(replaceValue);
+            return true;
+        }
+        i = (i + 1) % allocatedSize;
+        nowDistance++;
+    }
     return false;
 }
 
 bool RobinHoodHashTable::contains(const string& elem) const {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
-    return false;
+    int hashCode = myHashFn(elem);
+    int i = hashCode, nowDistance = 0;
+    while (true) {
+        if (elems[i].value == elem && elems[i].distance != EMPTY_SLOT) {
+            return true;
+        }
+        if (elems[i].distance == EMPTY_SLOT || nowDistance > elems[i].distance) {
+            return false;
+        }
+        i = (i + 1) % allocatedSize;
+        nowDistance++;
+    }
 }
 
 bool RobinHoodHashTable::remove(const string& elem) {
     /* TODO: Delete this comment and the next lines, then implement this function. */
-    (void) elem;
-    return false;
+    if ((isEmpty()) || (!contains(elem))) {
+        return false;
+    }
+    int hashCode = myHashFn(elem);
+    while (true) {
+        if (elems[hashCode].value == elem) {
+            elems[hashCode].distance = EMPTY_SLOT;
+            elems[hashCode].value.clear();
+            logicalSize--;
+            while (true) {
+                if (elems[(hashCode + 1) % allocatedSize].distance == EMPTY_SLOT ||
+                    elems[(hashCode + 1) % allocatedSize].distance == 0) {
+                    elems[hashCode].distance = EMPTY_SLOT;
+                    elems[hashCode].value.clear();
+                    break;
+                }
+                elems[hashCode].distance = elems[(hashCode + 1) % allocatedSize].distance - 1;
+                elems[hashCode].value = elems[(hashCode + 1) % allocatedSize].value;
+                hashCode = (hashCode + 1) % allocatedSize;
+            }
+            break;
+        }
+        hashCode = (hashCode + 1) % allocatedSize;
+    }
+    return true;
 }
 
 void RobinHoodHashTable::printDebugInfo() const {
@@ -1137,7 +1197,6 @@ PROVIDED_TEST("Stress Test: Inserts/searches/deletes work in expected time O(1).
 #include "Demos/Timer.h"
 #include <fstream>
 PROVIDED_TEST("Stress Test: Handles large workflows with little free space (should take at most five seconds)") {
-    SHOW_ERROR("Stress test is disabled by default. To run it, comment out line " + to_string(__LINE__) + " of " + getTail(__FILE__) + ".");
 
     Vector<string> english;
     ifstream input("res/EnglishWords.txt");
