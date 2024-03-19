@@ -25,7 +25,19 @@ Map<string, string>
 breakWeakPasswords(const Map<string, int>& stolenPasswordFile,
                    const Set<string>& knownWeakPasswords,
                    HashFunction<string> hashFn) {
-    return {};
+    Map<int, string> weakHashCode;
+    for (string password: knownWeakPasswords) {
+        weakHashCode[hashFn(password)] = password;
+    }
+
+    Map<string, string> result;
+    for (string user: stolenPasswordFile) {
+        int stolenHashCode = stolenPasswordFile[user];
+        if (weakHashCode.containsKey(stolenHashCode)) {
+            result[user] = weakHashCode[stolenHashCode];
+        }
+    }
+    return result;
 }
 
 /* * * * * Provided Tests Below This Point * * * * */

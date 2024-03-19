@@ -32,7 +32,7 @@ OurStack::~OurStack() {
 
 void OurStack::push(int value) {
     if (logicalSize == allocatedSize) {
-        grow();
+        setCapacity(value * 2);
     }
     elems[logicalSize] = value;
     logicalSize++;
@@ -41,7 +41,22 @@ void OurStack::push(int value) {
 int OurStack::pop() {
     int value = peek();
     logicalSize--;
+    if (logicalSize < allocatedSize / 4) {
+        setCapacity(allocatedSize / 2);
+    }
     return value;
+}
+
+void OurStack::setCapacity(int capacity) {
+    if (capacity < kInitialSize) return;
+
+    int* newArr = new int[capacity];
+    for (int i = 0; i < size(); i++) {
+        newArr[i] = elems[i];
+    }
+    delete[] elems;
+    elems = newArr;
+    allocatedSize = capacity;
 }
 
 int OurStack::peek() const {
@@ -59,15 +74,6 @@ bool OurStack::isEmpty() const {
     return logicalSize == 0;
 }
 
-void OurStack::grow() {
-    int* newArr = new int[allocatedSize * 2];
-    for (int i = 0; i < logicalSize; i++) {
-        newArr[i] = elems[i];
-    }
-    delete[] elems;
-    elems = newArr;
-    allocatedSize *= 2;
-}
 
 /* * * * * Provided Tests Below This Point * * * * */
 

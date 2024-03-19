@@ -13,7 +13,7 @@ public:
     bool isEmpty() const;
 
 private:
-    void grow();
+    void setCapacity(int capacity);
 
     int* elems;
     int logicalSize;
