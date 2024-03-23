@@ -17,6 +17,7 @@
 #include "error.h"
 using namespace std;
 
+
 /*
  * Function: sumOfElementsIn
  * -------------------------
@@ -24,8 +25,16 @@ using namespace std;
  * elements.
  */
 int sumOfElementsIn(Cell* list) {
-    (void) list;
-    return -1;
+    /* Iterative solution
+    int result = 0;
+    for (Cell* curr = list; curr != nullptr; curr = curr->next) {
+        result += curr->value;
+    }
+    return result;
+    */
+    /* Recursive solution */
+    if (list == nullptr) return 0;
+    return list->value + sumOfElementsIn(list->next);
 }
 
 /*
@@ -35,8 +44,18 @@ int sumOfElementsIn(Cell* list) {
  * last element in the list.
  */
 Cell* lastElementOf(Cell* list) {
-    (void) list;
-    return nullptr;
+    /* Iterative solution
+    if (list == nullptr) error("Empty linked list!");
+    Cell* result = list;
+    while (result->next != nullptr) {
+        result = result->next;
+    }
+    return result;
+    */
+    /* Recursive solution */
+    if (list == nullptr) error("Empty linked list!");
+    if (list->next == nullptr) return list;
+    return lastElementOf(list->next);
 }
 
 

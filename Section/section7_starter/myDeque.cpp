@@ -11,40 +11,83 @@
  */
 
 #include "myDeque.h"
+#include "error.h"
 using namespace std;
 
-Deque::Deque() {}
+Deque::Deque() {
+    head = new Cell;
+    tail = new Cell;
+    head->next = tail;
+    tail->prev = head;
+    head->prev = tail->next = nullptr;
 
-Deque::~Deque() {}
+    numElems = 0;
+}
+
+Deque::~Deque() {
+    while (head != nullptr) {
+        Cell* next = head->next;
+        delete head;
+        head = next;
+    }
+}
 
 bool Deque::isEmpty() const {
-    return false;
+    return numElems == 0;
 }
 
 int Deque::size() const {
-    return -1;
+    return numElems;
+}
+
+Deque::Cell* Deque::creatNewCell(int value) {
+    Cell* newCell = new Cell;
+    newCell->value = value;
+    numElems++;
+    return newCell;
+}
+
+void Deque::remove(Cell* toRemove) {
+    toRemove->prev->next = toRemove->next;
+    toRemove->next->prev = toRemove->prev;
+    delete toRemove;
+    numElems--;
 }
 
 void Deque::pushFront(int value) {
-    (void) value;
+    Cell* newCell = creatNewCell(value);
+    newCell->next = head->next;
+    newCell->prev = head;
+    newCell->prev->next = newCell;
+    newCell->next->prev = newCell;
 }
 
 void Deque::pushBack(int value) {
-    (void) value;
+    Cell* newCell = creatNewCell(value);
+    newCell->next = tail;
+    newCell->prev = tail->prev;
+    newCell->prev->next = newCell;
+    newCell->next->prev = newCell;
 }
 
 int Deque::peekFront() const {
-    return -1;
+    if (isEmpty()) error("Empty List!!");
+    return tail->prev->value;
 }
 
 int Deque::peekBack() const {
-    return -1;
+    if (isEmpty()) error("Empty List!!");
+    return head->next->value;
 }
 
 int Deque::popFront() {
-    return -1;
+    int result = peekFront();
+    remove(head->next);
+    return result;
 }
 
 int Deque::popBack() {
-    return -1;
+    int result = peekBack();
+    remove(tail->prev);
+    return result;
 }

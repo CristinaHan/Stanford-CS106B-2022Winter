@@ -30,9 +30,18 @@ struct DoublyLinkedCell {
  * here so feel free to test both out.
  */
 void insertBefore(DoublyLinkedCell*& head, DoublyLinkedCell* beforeMe, DoublyLinkedCell* newCell) {
-    (void) head;
-    (void) beforeMe;
-    (void) newCell;
+    if (beforeMe == head) {
+        newCell->next = head;
+        newCell->prev = nullptr;
+        head->prev = newCell;
+        head = newCell;
+    }
+    else {
+        beforeMe->prev->next = newCell;
+        newCell->next = beforeMe;
+        newCell->prev = beforeMe->prev;
+        beforeMe->prev = newCell;
+    }
 }
 
 /* * * * * Provided Tests Below This Point * * * * */

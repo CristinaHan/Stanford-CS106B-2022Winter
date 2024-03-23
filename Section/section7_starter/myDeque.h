@@ -32,4 +32,18 @@ public:
     /* Returns and removes the first or last element of the deque. */
     int popFront();
     int popBack();
+
+private:
+    struct Cell {
+        int value;
+        Cell* next;
+        Cell* prev;
+    };
+
+    Cell* head;
+    Cell* tail;
+    int numElems;
+
+    Cell* creatNewCell(int value);
+    void remove(Cell* toRemove);
 };

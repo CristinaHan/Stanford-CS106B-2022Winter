@@ -24,12 +24,38 @@ using namespace std;
  * Note that this function header will be updated to be:
  *     void concat(Cell*& one, Cell* two);
  */
-Cell* concat(Cell* one, Cell* two) {
-    (void) one;
-    (void) two;
-    return nullptr;
+
+Cell* lastElement(Cell* list) {
+    /* Iterative solution
+    if (list == nullptr) error("Empty linked list!");
+    Cell* result = list;
+    while (result->next != nullptr) {
+        result = result->next;
+    }
+    return result;
+    */
+    /* Recursive solution */
+    if (list == nullptr) error("Empty linked list!");
+    if (list->next == nullptr) return list;
+    return lastElement(list->next);
 }
 
+
+Cell* concat(Cell* one, Cell* two) {
+    if (one == nullptr) return two;
+    lastElement(one)->next = two;
+    return one;
+}
+/*
+void concat(Cell*& one, Cell* two) {
+    if (one == nullptr) {
+        one = two;
+    }
+    else {
+        lastElement(one)->next = two;
+    }
+}
+*/
 /* * * * * Provided Tests Below This Point * * * * */
 #include "vector.h"
 

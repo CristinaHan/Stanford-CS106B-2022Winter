@@ -15,6 +15,7 @@
 #include "cell.h"
 #include "utility.h"
 #include "error.h"
+#include "vector.h"
 using namespace std;
 
 /*
@@ -24,8 +25,17 @@ using namespace std;
  * looking for both an iterative and a recursive implementation
  * here so feel free to test both out.
  */
+
+
+Cell* helper(Cell* pre, Cell* curr) {
+    if (curr == nullptr) return pre;
+    Cell* next = curr->next;
+    curr->next = pre;
+    return helper(curr, next);
+
+}
 void reverse(Cell*& list) {
-    (void) list;
+    list = helper(nullptr, list);
 }
 
 /* * * * * Provided Tests Below This Point * * * * */

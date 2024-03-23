@@ -23,8 +23,55 @@ using namespace std;
  * Takes in a linked list and sorts it in-place using the 
  * quickSort algorithm.
  */
-void quicksort(Cell*& list) {
-    (void) list;
+Cell* lastElem(Cell* list) {
+    if (list == nullptr) error("Empty linked list!");
+    if (list->next == nullptr) return list;
+    return lastElem(list->next);
+}
+
+Cell* concatList(Cell* one, Cell* two) {
+    if (one == nullptr) return two;
+    lastElem(one)->next = two;
+    return one;
+}
+
+void addElem(Cell*& list, Cell* elems) {
+    elems->next = list;
+    list = elems;
+}
+
+void splitList(Cell*& list, Cell*& smaller, Cell*& bigger, Cell*& pivot) {
+    while (list != nullptr) {
+        Cell* next = list->next;
+        if (list->value < pivot->value) {
+            addElem(smaller, list);
+        }
+        else if (list->value == pivot->value) {
+            addElem(pivot, list);
+        }
+        else {
+            addElem(bigger, list);
+        }
+        list = next;
+    }
+}
+
+void quickSort(Cell*& list) {
+    if (list == nullptr || list->next == nullptr) return;
+
+    Cell* pivot = list;
+    Cell* other = pivot->next;
+    pivot->next = nullptr;
+    Cell* smaller = nullptr;
+    Cell* bigger = nullptr;
+
+    splitList(other, smaller, bigger, pivot);
+    quickSort(smaller);
+    quickSort(bigger);
+
+    pivot = concatList(pivot, bigger);
+    smaller = concatList(smaller, pivot);
+    list = smaller;
 }
 
 /* * * * * Provided Tests Below This Point * * * * */

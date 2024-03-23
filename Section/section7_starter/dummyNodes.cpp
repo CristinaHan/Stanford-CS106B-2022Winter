@@ -29,7 +29,12 @@ struct DoublyLinkedCell {
  * then returns a pointer to the head.
  */
 DoublyLinkedCell* makeEmptyList() {
-    return nullptr;
+    DoublyLinkedCell* head = new DoublyLinkedCell;
+    DoublyLinkedCell* tail = new DoublyLinkedCell;
+    head->next = tail;
+    tail->prev = head;
+    head->prev = tail->next = nullptr;
+    return head;
 }
 
 /**
@@ -44,8 +49,9 @@ DoublyLinkedCell* makeEmptyList() {
  * for learning purposes!
  */
 void printList(DoublyLinkedCell* head, DoublyLinkedCell* tail) {
-    (void) head;
-    (void) tail;
+    for (DoublyLinkedCell* curr = head->next; curr != tail; curr = curr->next) {
+        cout << curr->value << endl;
+    }
 }
 
 /**
@@ -55,8 +61,10 @@ void printList(DoublyLinkedCell* head, DoublyLinkedCell* tail) {
  * and performs the pointer rewiring.
  */ 
 void insertBefore(DoublyLinkedCell* newCell, DoublyLinkedCell* beforeMe) {
-    (void) newCell;
-    (void) beforeMe;
+    beforeMe->prev->next = newCell;
+    newCell->next = beforeMe;
+    newCell->prev = beforeMe->prev;
+    beforeMe->prev = newCell;
 }
 
 /**
@@ -66,8 +74,10 @@ void insertBefore(DoublyLinkedCell* newCell, DoublyLinkedCell* beforeMe) {
  * and perform the pointer rewiring.
  */
 void insertAfter(DoublyLinkedCell* newCell, DoublyLinkedCell* afterMe) {
-    (void) newCell;
-    (void) afterMe;
+    newCell->next = afterMe->next;
+    newCell->prev = afterMe;
+    afterMe->next = newCell;
+    newCell->next->prev = newCell;
 }
 
 /**
@@ -76,8 +86,7 @@ void insertAfter(DoublyLinkedCell* newCell, DoublyLinkedCell* afterMe) {
  * Uses pointer rewiring to append newCell to the tail pointer.
  */ 
 void append(DoublyLinkedCell* tail, DoublyLinkedCell* newCell) {
-    (void) tail;
-    (void) newCell;
+    insertBefore(newCell, tail);
 }
 
 /**
@@ -86,8 +95,7 @@ void append(DoublyLinkedCell* tail, DoublyLinkedCell* newCell) {
  * Uses pointer rewiring to prepend newCell to the tail head.
  */ 
 void prepend(DoublyLinkedCell* head, DoublyLinkedCell* newCell) {
-    (void) head;
-    (void) newCell;
+    insertAfter(newCell, head);
 }
 
 /**
@@ -96,7 +104,9 @@ void prepend(DoublyLinkedCell* head, DoublyLinkedCell* newCell) {
  * Splices out toRemove from the linked list.
  */ 
 void remove(DoublyLinkedCell* toRemove) {
-    (void) toRemove;
+    toRemove->prev->next = toRemove->next;
+    toRemove->next->prev = toRemove->prev;
+    delete toRemove;
 }
 
 /**

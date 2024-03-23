@@ -13,6 +13,7 @@
 #include <string>
 #include "testing/SimpleTest.h"
 #include "error.h"
+#include "simpio.h"
 using namespace std;
 
 /*
@@ -30,7 +31,24 @@ struct Cell {
  * Prompts the user 
  */
 Cell* readList() {
-    return nullptr;
+    Cell* tailPointer = nullptr;
+    Cell* list = nullptr;
+    while (true) {
+        string line = getLine("Input your sentence:");
+        if (line == "") break;
+        Cell* newCell = new Cell;
+        newCell->value = line;
+        newCell->next = nullptr;
+
+        if (list == nullptr) {
+            list = newCell;
+            tailPointer = newCell;
+        } else {
+            tailPointer->next = newCell;
+            tailPointer = newCell;
+        }
+    }
+    return list;
 }
 
 /* * * * * Add any additional STUDENT_TESTS here * * * * */
