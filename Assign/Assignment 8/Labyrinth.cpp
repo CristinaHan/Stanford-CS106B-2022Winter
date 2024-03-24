@@ -1,13 +1,47 @@
 #include "Labyrinth.h"
+#include "set.h"
 using namespace std;
+
+bool isPathToFreedomRec(MazeCell* start, const string& moves, Set<Item>& item) {
+    Item currItem = start->whatsHere;
+    if (currItem != Item::NOTHING) {
+        item.remove(currItem);
+    }
+    if (item.isEmpty()) return true;
+    if (moves.length() == 0) return false;
+    if (moves[0] == 'N') {
+        if (start->north != nullptr) {
+            return isPathToFreedomRec(start->north, moves.substr(1), item);
+        }
+        return false;
+    }
+    if (moves[0] == 'S') {
+        if (start->south != nullptr) {
+            return isPathToFreedomRec(start->south, moves.substr(1), item);
+        }
+        return false;
+    }
+    if (moves[0] == 'E') {
+        if (start->east != nullptr) {
+            return isPathToFreedomRec(start->east, moves.substr(1), item);
+        }
+        return false;
+    }
+    if (moves[0] == 'W') {
+        if (start->west != nullptr) {
+            return isPathToFreedomRec(start->west, moves.substr(1), item);
+        }
+        return false;
+    }
+    return true;
+}
 
 bool isPathToFreedom(MazeCell* start, const string& moves) {
     /* TODO: Delete this comment and the next few lines, then implement
      * this function.
      */
-    (void) start;
-    (void) moves;
-    return false;
+    Set<Item> notFindItem = {Item::SPELLBOOK, Item::POTION, Item::WAND};
+    return isPathToFreedomRec(start, moves, notFindItem);
 }
 
 
@@ -15,23 +49,13 @@ bool isPathToFreedom(MazeCell* start, const string& moves) {
 #include "GUI/SimpleTest.h"
 #include "Demos/MazeGenerator.h"
 
+
 /* Optional: Add your own custom tests here! */
 
 
 
 
-
-
-
-
-
-
-
-
-
-
 /* * * * * Provided Tests Below This Point * * * * */
-
 /* Utility function to free all memory allocated for a maze. */
 void deleteMaze(const Grid<MazeCell*>& maze) {
     for (auto* elem: maze) {
@@ -41,6 +65,7 @@ void deleteMaze(const Grid<MazeCell*>& maze) {
      * rather than what's shown above?
      */
 }
+
 
 PROVIDED_TEST("Checks paths in the sample maze.") {
     auto maze = toMaze({"* *-W *",

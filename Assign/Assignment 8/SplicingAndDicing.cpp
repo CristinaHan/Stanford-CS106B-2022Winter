@@ -1,4 +1,5 @@
 #include "SplicingAndDicing.h"
+#include "strlib.h"
 using namespace std;
 
 /**
@@ -10,7 +11,12 @@ using namespace std;
  */
 void deleteNucleotides(Nucleotide* dna) {
     /* TODO: Delete this comment and the next line and implement this function. */
-    (void) dna;
+    if (dna == nullptr) return;
+    while (dna != nullptr) {
+        Nucleotide* rest = dna->next;
+        delete dna;
+        dna = rest;
+    }
 }
 
 /**
@@ -22,8 +28,14 @@ void deleteNucleotides(Nucleotide* dna) {
  */
 string fromDNA(Nucleotide* dna) {
     /* TODO: Delete this comment and the next lines and implement this function. */
-    (void) dna;
-    return "";
+    if (dna == nullptr) return "";
+
+    string result = "";
+    while (dna != nullptr) {
+        result += charToString(dna->value);
+        dna = dna->next;
+    }
+    return result;
 }
 
 /**
@@ -35,8 +47,27 @@ string fromDNA(Nucleotide* dna) {
  */
 Nucleotide* toStrand(const string& str) {
     /* TODO: Delete this comment and the next lines and implement this function. */
-    (void) str;
-    return nullptr;
+    if (str == "") return nullptr;
+
+    Nucleotide* result = new Nucleotide;
+    result->prev = nullptr;
+    result->value = str[0];
+
+    if (str.length() == 1) {
+        result->next = nullptr;
+    }
+    else {
+        Nucleotide* tail = result;
+        for (int i = 1; i < str.length(); i++) {
+            Nucleotide* curr = new Nucleotide;
+            curr->value = str[i];
+            tail->next = curr;
+            curr->prev = tail;
+            tail = curr;
+        }
+        tail->next = nullptr;
+    }
+    return result;
 }
 
 /**
@@ -50,8 +81,34 @@ Nucleotide* toStrand(const string& str) {
  */
 Nucleotide* findFirst(Nucleotide* dna, Nucleotide* target) {
     /* TODO: Delete this comment and the next lines and implement this function. */
-    (void) dna;
-    (void) target;
+    if (target == nullptr || dna == nullptr) return dna;
+    Nucleotide* currTarget = target;
+    Nucleotide* firstDna = nullptr;
+    int count = 0;
+    while (dna != nullptr) {
+        if (currTarget->value == dna->value) {
+            if (count == 0) {
+                firstDna = dna;
+            }
+            count += 1;
+            currTarget = currTarget->next;
+            if (currTarget == nullptr) {
+                return firstDna;
+            }
+            dna = dna->next;
+        }
+        else {
+            if (count > 0) {
+                currTarget = target;
+                count = 0;
+                dna = firstDna->next;
+                firstDna = nullptr;
+            }
+            else {
+                dna = dna->next;
+            }
+        }
+    }
     return nullptr;
 }
 
@@ -66,10 +123,45 @@ Nucleotide* findFirst(Nucleotide* dna, Nucleotide* target) {
  *
  * This function should not use any containers (e.g. Vector, HashSet, etc.)
  */
+
 bool spliceFirst(Nucleotide*& dna, Nucleotide* target) {
     /* TODO: Delete this comment and the next lines and implement this function. */
-    (void) dna;
-    (void) target;
+    if (target == nullptr) return true;
+    Nucleotide* head = findFirst(dna, target);
+    if (head != nullptr) {
+        Nucleotide* tail = head;
+        Nucleotide* tempTarget = target;
+        Nucleotide* curr = dna;
+        while (tempTarget->next != nullptr) {
+            tail = tail->next;
+            tempTarget = tempTarget->next;
+        }
+
+        if (head->prev == nullptr && tail->next == nullptr) {
+            deleteNucleotides(dna);
+            dna = nullptr;
+        }
+        else if (head->prev == nullptr && tail->next != nullptr) {
+            dna = tail->next;
+            dna->prev = nullptr;
+            tail->next = nullptr;
+            deleteNucleotides(curr);
+        }
+        else if (head->prev != nullptr && tail->next == nullptr) {
+            curr = head->prev;
+            curr->next = nullptr;
+            head->prev = nullptr;
+            deleteNucleotides(head);
+        }
+        else {
+            head->prev->next = tail->next;
+            tail->next->prev = head->prev;
+            head->prev = nullptr;
+            tail->next = nullptr;
+            deleteNucleotides(head);
+        }
+        return true;
+    }
     return false;
 }
 
@@ -79,17 +171,6 @@ bool spliceFirst(Nucleotide*& dna, Nucleotide* target) {
 #include "GUI/SimpleTest.h"
 
 /* TODO: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* * * * * Provided Tests Below This Point * * * * */
