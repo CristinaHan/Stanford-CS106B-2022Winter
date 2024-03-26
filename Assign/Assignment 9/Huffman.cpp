@@ -1,4 +1,7 @@
 #include "Huffman.h"
+#include "priorityqueue.h"
+#include "map.h"
+#include "strlib.h"
 using namespace std;
 
 /**
@@ -14,6 +17,25 @@ void deleteTree(EncodingTreeNode* tree) {
     }
 }
 
+bool differentChar(const string& str) {
+    if (str.length() <= 1) return false;
+    for (int i = 0; i < str.length() - 1; i++) {
+        char currChar = str[i];
+        char nextChar = str[i + 1];
+        if (currChar != nextChar) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Map<char, double> numOfChar(const string& str) {
+    Map<char, double> result = {};
+    for (char ch: str) {
+        result[ch] += 1;
+    }
+    return result;
+}
 /**
  * Constructs a Huffman coding tree for the given string, using the algorithm
  * described in lecture.
@@ -27,8 +49,31 @@ void deleteTree(EncodingTreeNode* tree) {
  */
 EncodingTreeNode* huffmanTreeFor(const string& str) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) str;
-    return nullptr;
+    if (!differentChar(str)) error("Must have at least two different characters!");
+
+    PriorityQueue<EncodingTreeNode*> queueForNode;
+    Map<char, double> charNum = numOfChar(str);
+
+    for (char currChar: charNum) {  //不能在字符串中遍历，否则可能会导致queue中有重复的字母
+        EncodingTreeNode* curr = new EncodingTreeNode;
+        curr->ch = currChar;
+        curr->zero = nullptr;
+        curr->one = nullptr;
+        queueForNode.enqueue(curr, charNum[currChar]);
+    }
+
+    while (queueForNode.size() != 1) {
+        double weightZero = queueForNode.peekPriority();
+        EncodingTreeNode* nodeZero = queueForNode.dequeue();
+        double weightOne = queueForNode.peekPriority();
+        EncodingTreeNode* nodeOne = queueForNode.dequeue();
+
+        EncodingTreeNode* rootNode = new EncodingTreeNode;
+        rootNode->zero = nodeZero;
+        rootNode->one = nodeOne;
+        queueForNode.enqueue(rootNode, weightZero + weightOne);
+    }
+    return queueForNode.dequeue();
 }
 
 /**
@@ -43,10 +88,21 @@ EncodingTreeNode* huffmanTreeFor(const string& str) {
  */
 string decodeText(Queue<Bit>& bits, EncodingTreeNode* tree) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) bits;
-    (void) tree;
-    return "";
+    string result = "";
+
+    while (!(bits.isEmpty())) {
+        EncodingTreeNode* subtree = tree;
+        while (!(subtree->one == nullptr && subtree->zero == nullptr)) {
+            Bit curr = bits.dequeue();
+            if (curr == 0) subtree = subtree->zero;
+            else subtree = subtree->one;
+        }
+
+        result += subtree->ch;
+    }
+    return result;
 }
+
 
 /**
  * Given a string and a Huffman encoding tree, encodes that text using the tree
@@ -56,11 +112,29 @@ string decodeText(Queue<Bit>& bits, EncodingTreeNode* tree) {
  * are edge cases you don't have to handle. The input tree will contain all
  * characters that make up the input string.
  */
+bool findNode(char character, EncodingTreeNode* tree) {
+    if (tree == nullptr) return false;
+    if (tree->zero == nullptr && tree->one == nullptr && tree->ch == character) return true;
+    return findNode(character, tree->zero) || findNode(character, tree->one);
+}
+
 Queue<Bit> encodeText(const string& str, EncodingTreeNode* tree) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) str;
-    (void) tree;
-    return {};
+    Queue<Bit> result = {};
+    for (char currChar: str) {
+        EncodingTreeNode* subtree = tree;
+
+        while (!(subtree->zero == nullptr && subtree->one == nullptr)) {
+            if (findNode(currChar, subtree->zero)) {
+                result.enqueue(0);
+                subtree = subtree->zero;
+            } else {
+                result.enqueue(1);
+                subtree = subtree->one;
+            }
+        }
+    }
+    return result;
 }
 
 /**
@@ -72,9 +146,15 @@ Queue<Bit> encodeText(const string& str, EncodingTreeNode* tree) {
  */
 EncodingTreeNode* decodeTree(Queue<Bit>& bits, Queue<char>& leaves) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) bits;
-    (void) leaves;
-    return nullptr;
+    EncodingTreeNode* result = new EncodingTreeNode;
+    if (bits.dequeue() == 0) {
+        result->ch = leaves.dequeue();
+        result->zero = result->one = nullptr;
+    } else {
+        result->zero = decodeTree(bits, leaves);
+        result->one = decodeTree(bits, leaves);
+    }
+    return result;
 }
 
 /**
@@ -89,9 +169,14 @@ EncodingTreeNode* decodeTree(Queue<Bit>& bits, Queue<char>& leaves) {
  */
 void encodeTree(EncodingTreeNode* tree, Queue<Bit>& bits, Queue<char>& leaves) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) tree;
-    (void) bits;
-    (void) leaves;
+    if (tree->zero == nullptr && tree->one == nullptr) {
+        bits.enqueue(0);
+        leaves.enqueue(tree->ch);
+    } else {
+        bits.enqueue(1);
+        encodeTree(tree->zero, bits, leaves);
+        encodeTree(tree->one, bits, leaves);
+    }
 }
 
 /**
@@ -103,8 +188,20 @@ void encodeTree(EncodingTreeNode* tree, Queue<Bit>& bits, Queue<char>& leaves) {
  */
 HuffmanResult compress(const string& text) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) text;
-    return {};
+    HuffmanResult result;
+    Queue<Bit> treeBits = {};
+    Queue<char> treeLeaves = {};
+
+    EncodingTreeNode* huffmanTree = huffmanTreeFor(text);
+    encodeTree(huffmanTree, treeBits, treeLeaves);
+    Queue<Bit> messageBits = encodeText(text, huffmanTree);
+
+    result.treeBits = treeBits;
+    result.treeLeaves = treeLeaves;
+    result.messageBits = messageBits;
+
+    deleteTree(huffmanTree);
+    return result;
 }
 
 /**
@@ -119,8 +216,10 @@ HuffmanResult compress(const string& text) {
  */
 string decompress(HuffmanResult& file) {
     /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) file;
-    return "";
+    EncodingTreeNode* huffmanTree = decodeTree(file.treeBits, file.treeLeaves);
+    string result = decodeText(file.messageBits, huffmanTree);
+    deleteTree(huffmanTree);
+    return result;
 }
 
 
@@ -128,17 +227,39 @@ string decompress(HuffmanResult& file) {
 #include "GUI/SimpleTest.h"
 
 /* TODO: Add your own custom tests here! */
+STUDENT_TEST("A simple test for function differentChar") {
+    string str1 = "";
+    string str2 = "aa";
+    string str3 = "ac";
+    string str4 = "aaaaa";
+    string str5 = "aaabchd";
 
+    EXPECT(!differentChar(str1));
+    EXPECT(!differentChar(str2));
+    EXPECT(differentChar(str3));
+    EXPECT(!differentChar(str4));
+    EXPECT(differentChar(str5));
+}
 
+STUDENT_TEST("A simple test for function numOfChar") {
+    string str1 = "";
+    string str2 = "aa";
+    string str3 = "ac";
+    string str4 = "aaaaa";
+    string str5 = "aaabchd";
 
+    Map<char, double> result1 = {};
+    Map<char, double> result2 = {{'a', 2}};
+    Map<char, double> result3 = {{'a', 1}, {'c', 1}};
+    Map<char, double> result4 = {{'a', 5}};
+    Map<char, double> result5 = {{'a', 3}, {'b', 1}, {'c', 1}, {'h', 1}, {'d', 1}};
 
-
-
-
-
-
-
-
+    EXPECT_EQUAL(numOfChar(str1), result1);
+    EXPECT_EQUAL(numOfChar(str2), result2);
+    EXPECT_EQUAL(numOfChar(str3), result3);
+    EXPECT_EQUAL(numOfChar(str4), result4);
+    EXPECT_EQUAL(numOfChar(str5), result5);
+}
 
 
 /* * * * * Provided Tests Below This Point * * * * */
