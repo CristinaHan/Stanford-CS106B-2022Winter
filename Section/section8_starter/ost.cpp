@@ -35,9 +35,11 @@ struct OSTNode {
  * in the tree, your function should return nullptr as a sentinel.
  */
 OSTNode* kthNodeIn(OSTNode* root, int k) {
-    (void) root;
-    (void) k;
-    return nullptr;
+    if (root == nullptr || k < 0) return nullptr;
+
+    if (k < root->leftSubtreeSize) return kthNodeIn(root->left, k);
+    else if (k == root->leftSubtreeSize) return root;
+    else return kthNodeIn(root->right, k - 1 - root->leftSubtreeSize); //减去根节点左子树和根节点
 }
 
 PROVIDED_TEST("Simple tests for kthNodeIn function") {

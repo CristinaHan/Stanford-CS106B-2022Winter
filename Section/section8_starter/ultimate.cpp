@@ -30,13 +30,19 @@ using namespace std;
  * in the BST.
  */
 Node* biggestNodeIn(Node* root) {
-    (void) root;
-    return nullptr;
+    if (root == nullptr) error("The tree is EMPTY!!");
+    if (root->right == nullptr) return root;
+    return biggestNodeIn(root->right);
 }
 
 Node* secondBiggestNodeIn(Node* root) {
-    (void) root;
-    return nullptr;
+    if (root == nullptr) error("The tree is EMPTY!!");
+    Node* curr = root;
+    while (curr->right->right != nullptr) {
+        curr = curr->right;
+    }
+    if (curr->right->left == nullptr) return curr;
+    else return biggestNodeIn(curr->right->left);
 }
 
 PROVIDED_TEST("Simple tests for biggestNodeIn function") {

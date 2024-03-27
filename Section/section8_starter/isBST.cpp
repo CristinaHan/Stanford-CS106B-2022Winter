@@ -24,9 +24,16 @@ using namespace std;
  * Checks if the tree given by root is a valid 
  * binary searcg tree.
  */
+bool helper(Node* root, Node* minNode, Node* maxNode) {
+    if (root == nullptr) return true;
+
+    if (minNode != nullptr && root->data <= minNode->data) return false;
+    if (maxNode != nullptr && root->data >= maxNode->data) return false;
+
+    return helper(root->left, minNode, root) && helper(root->right, root, maxNode);
+}
 bool isBST(Node* root) {
-    (void) root;
-    return false;
+    return helper(root, nullptr, nullptr);
 }
 
 PROVIDED_TEST("Simple positive tests for isBST function") {

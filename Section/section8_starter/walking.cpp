@@ -25,9 +25,8 @@ using namespace std;
  * not.
  */
 bool contains(Node* root, int key) {
-    (void) root;
-    (void) key;
-    return false;
+    if (root == nullptr) return false;
+    return root->data == key || contains(root->left, key) || contains(root->right, key);
 }
 
 /* Function: insert
@@ -37,8 +36,25 @@ bool contains(Node* root, int key) {
  * ordering.
  */
 void insert(Node*& root, int key) {
-    (void) root;
-    (void) key;
+    Node* curr = root;
+    Node* prev = nullptr;
+
+    while (curr != nullptr) {
+        prev = curr;
+        if (curr->data == key) return;
+        else if (curr->data < key) curr = curr->right;
+        else curr = curr->left;
+    }
+
+    curr = new Node;
+    curr->data = key;
+    curr->left = curr->right = nullptr;
+
+    if (prev == nullptr) root = curr;
+    else {
+        if (prev->data > key) prev->left = curr;
+        else prev->right = curr;
+    }
 }
 
 PROVIDED_TEST("Simple Tests for Contains") {

@@ -30,8 +30,9 @@ using namespace std;
  */
 
 int heightOf(Node* root) {
-    (void) root;
-    return -1;
+    if (root == nullptr) return -1;
+    return 1 + max(heightOf(root->left), heightOf(root->right));
+
 }
 
 PROVIDED_TEST("Simple set of test cases for heightOf function") {

@@ -29,9 +29,12 @@ using namespace std;
  */
 
 bool areEqual(Node* one, Node* two) {
-    (void) one;
-    (void) two;
-    return false;
+    if (one == nullptr && two == nullptr) return true;
+    if (one == nullptr || two == nullptr) return false;
+
+    return one->data == two->data &&
+           areEqual(one->left, two->left) &&
+           areEqual(one->right, two->right);
 }
 
 PROVIDED_TEST("Simple Tests for Tree Equality") {

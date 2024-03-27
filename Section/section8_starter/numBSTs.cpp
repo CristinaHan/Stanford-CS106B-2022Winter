@@ -26,8 +26,13 @@ using namespace std;
  * trees you can make out of n elements.
  */
 int numBSTsOfSize(int n) {
-    (void) n;
-    return -1;
+    if (n == 0) return 1;
+
+    int result = 0;
+    for (int i = 0; i < n; i++) {
+        result += numBSTsOfSize(i) * numBSTsOfSize(n - 1 - i);
+    }
+    return result;
 }
 
 PROVIDED_TEST("Simple tests for numBSTsOfSize function") {

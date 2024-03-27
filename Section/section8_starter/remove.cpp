@@ -24,9 +24,50 @@ using namespace std;
  * Given the root of a tree and a key to remove,
  * removes the key in-place.
  */
+int largestDel(Node*& root);
+void haveChild(Node*& root);
+
+void haveChild(Node*& root) {
+    if (root->left == nullptr && root->right == nullptr) {
+        delete root;
+        root = nullptr;
+    }
+    else if (root->left == nullptr) {
+        Node* next = root->right;
+        delete root;
+        root = next;
+    }
+    else if (root->right == nullptr) {
+        Node* next = root->left;
+        delete root;
+        root = next;
+    }
+    else {
+        root->data = largestDel(root->left);
+    }
+}
+
+int largestDel(Node*& root) {
+    if (root->right == nullptr) {
+        int result = root->data;
+        haveChild(root);
+        return result;
+    }
+    return largestDel(root->right);
+}
+
+
 void removeFrom(Node*& root, int value) {
-    (void) root;
-    (void) value;
+    if (root == nullptr) return;
+    else if (root->data < value) {
+        removeFrom(root->right, value);
+    }
+    else if (root->data == value) {
+        haveChild(root);
+    }
+    else {
+        removeFrom(root->left, value);
+    }
 }
 
 PROVIDED_TEST("Simple tests for remove function") {

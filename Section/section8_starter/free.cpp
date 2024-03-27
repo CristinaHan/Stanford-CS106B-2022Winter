@@ -26,7 +26,18 @@ using namespace std;
  * but give this a try before looking!
  */
 void free(Node* root) {
-    (void) root;
+    while (root != nullptr) {
+        if (root->left == nullptr) {
+            Node* rest = root->right;
+            delete root;
+            root = rest;
+        } else {
+            Node* leftTree = root->left;
+            root->left = leftTree->right;
+            leftTree->right = root;
+            root = leftTree;
+        }
+    }
 }
 
 PROVIDED_TEST("Simple tests for freeTree function") {
